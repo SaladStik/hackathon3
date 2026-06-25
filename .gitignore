@@ -1,0 +1,14 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Generated cache (re-downloaded on first run)
+ctrain_stops.json
+
+# Editor
+.vscode/
+
+# Data dumps
+*.pb
+*.zip
