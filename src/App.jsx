@@ -5,7 +5,7 @@ import { fetchFeed } from './realtime.js';
 import { DIRECTIONS } from './data.js';
 import TripPanel from './ui/TripPanel.jsx';
 import Hud from './ui/Hud.jsx';
-import LockButton from './ui/LockButton.jsx';
+import ViewButtons from './ui/ViewButtons.jsx';
 
 export default function App() {
   const mountRef = useRef(null);
@@ -105,7 +105,7 @@ export default function App() {
     <>
       <div ref={mountRef} className="canvas-host" />
       <Hud />
-      <LockButton />
+      <ViewButtons />
       <TripPanel />
     </>
   );

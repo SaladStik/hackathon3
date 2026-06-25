@@ -49,6 +49,7 @@ body { overflow: hidden; background: #9aa3ab; -webkit-tap-highlight-color: trans
   cursor: pointer;
 }
 .pill-right { right: 12px; }
+.pill-left { left: 12px; top: calc(env(safe-area-inset-top, 0px) + 64px); }
 .pill-active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
 /* main trip panel: the focus, anchored to the bottom as a sheet */

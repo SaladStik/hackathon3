@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const WHITE = new THREE.MeshStandardMaterial({ color: 0xf2f3f4, roughness: 0.45, metalness: 0.1 });
 const RED = new THREE.MeshStandardMaterial({ color: 0xcc1f33, roughness: 0.5, metalness: 0.1 });
-const GLASS = new THREE.MeshStandardMaterial({ color: 0x222b33, roughness: 0.15, metalness: 0.6 });
+const GLASS = new THREE.MeshStandardMaterial({ color: 0x223040, roughness: 0.1, metalness: 0.4, transparent: true, opacity: 0.4 });
 const GREY = new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.7 });
 const DARK = new THREE.MeshStandardMaterial({ color: 0x26292c, roughness: 0.8 });
 const WHEEL = new THREE.MeshStandardMaterial({ color: 0x1d2023, metalness: 0.5, roughness: 0.6 });
@@ -49,10 +49,27 @@ function buildCar() {
   const pb = new THREE.Mesh(new THREE.BoxGeometry(0.07, 1.0, 0.07), DARK); pb.position.set(0, pivot + 0.5, 0.2); pb.rotation.x = -0.5; car.add(pb);
   const bar = new THREE.Mesh(new THREE.BoxGeometry(W * 0.7, 0.06, 0.06), DARK); bar.position.set(0, pivot + 1.0, 0.85); car.add(bar);
 
+  car.userData.body = body;
   return car;
 }
 
 export const CAR_SPACING = 15.2;
+export const MAX_PEOPLE = 24;
+
+function addPeople(car) {
+  const geo = new THREE.CapsuleGeometry(0.16, 0.5, 3, 6);
+  const mat = new THREE.MeshStandardMaterial({ roughness: 0.7 });
+  const people = new THREE.InstancedMesh(geo, mat, MAX_PEOPLE);
+  people.frustumCulled = false;
+  const pos = [];
+  const rows = 8, cols = 3;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    pos.push(new THREE.Vector3((c - 1) * 0.7, 1.55, (r - 3.5) * 1.5));
+  }
+  people.userData.pos = pos;
+  car.add(people);
+  car.userData.people = people;
+}
 
 export function buildTrain(scene, count = 3) {
   const cars = [];
@@ -61,5 +78,6 @@ export function buildTrain(scene, count = 3) {
     scene.add(c);
     cars.push(c);
   }
+  addPeople(cars[0]); // riders shown in the lead car
   return cars;
 }

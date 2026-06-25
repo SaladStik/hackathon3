@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DIRECTIONS } from '../data.js';
+import { busyness } from '../busyness.js';
 import { computeWait, fetchFeed } from '../realtime.js';
 import { getState, setState } from '../store.js';
 import { useStore } from './useStore.js';
@@ -99,6 +100,7 @@ function Result({ loading, error, result, dirObj }) {
       <div className="result-row">
         <Stat label="Next train" value={next != null ? `${next} min` : 'n/a'} />
         <Stat label="Average delay" value={delay != null ? signed(delay) : 'n/a'} tone={delayTone(delay)} />
+        <Stat label="Train load" value={`${Math.round(busyness() * 100)}%`} />
       </div>
     </div>
   );

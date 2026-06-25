@@ -6,8 +6,9 @@ import { addEnvironment } from './environment.js';
 import { addCity } from './city.js';
 import { addStations } from './stations.js';
 import { addTunnels } from './tunnels.js';
-import { buildTrain, CAR_SPACING } from './train.js';
+import { buildTrain, CAR_SPACING, MAX_PEOPLE } from './train.js';
 import { createChaseCamera } from './chaseCamera.js';
+import { busyness } from '../busyness.js';
 
 const CRUISE = 16, ACCEL = 10, DECEL_WINDOW = 30, DWELL = 2.0;
 
@@ -53,6 +54,25 @@ export function createScene(host) {
   // motion
   let dist = 0, speed = 0, dwell = 0, nextStation = 0, lastDir = 1;
   const tmpP = new THREE.Vector3(), tmpT = new THREE.Vector3(), fz = new THREE.Vector3(0, 0, 1);
+
+  // riders shown in the lead car, colour + count from busyness
+  const people = cars[0].userData.people;
+  const pm4 = new THREE.Matrix4(), pq = new THREE.Quaternion(), ps = new THREE.Vector3();
+  const cLow = new THREE.Color(0x2e9e4f), cHigh = new THREE.Color(0xd81e2c), cNow = new THREE.Color();
+  function updatePeople(occ) {
+    const k = Math.round(occ * MAX_PEOPLE);
+    cNow.copy(cLow).lerp(cHigh, occ);
+    for (let i = 0; i < MAX_PEOPLE; i++) {
+      ps.setScalar(i < k ? 1 : 0.0001);
+      pm4.compose(people.userData.pos[i], pq, ps);
+      people.setMatrixAt(i, pm4);
+      people.setColorAt(i, cNow);
+    }
+    people.instanceMatrix.needsUpdate = true;
+    if (people.instanceColor) people.instanceColor.needsUpdate = true;
+  }
+
+  const insideEye = new THREE.Vector3(), insideTgt = new THREE.Vector3();
 
   function placeCar(car, d, dir) {
     d = ((d % track.length) + track.length) % track.length;
@@ -153,10 +173,21 @@ export function createScene(host) {
     } else {
       step(dt, dir);
       for (let i = 0; i < cars.length; i++) placeCar(cars[i], dist - i * CAR_SPACING * dir, dir);
+      updatePeople(busyness());
       const lead = cars[0].position;
       const t = (((dist % track.length) + track.length) % track.length) / track.length;
       track.curve.getTangentAt(t, tmpT).setY(0).normalize().multiplyScalar(dir);
-      chase.update(lead, tmpT, st.locked, inTunnel(t));
+
+      if (st.inside) {
+        // ride inside the lead car: see the riders and out the windows
+        cars[0].updateMatrixWorld();
+        insideEye.set(0, 1.95, -3.2); cars[0].localToWorld(insideEye);
+        insideTgt.set(0, 1.7, 10); cars[0].localToWorld(insideTgt);
+        camera.position.lerp(insideEye, 0.25);
+        camera.lookAt(insideTgt);
+      } else {
+        chase.update(lead, tmpT, st.locked, inTunnel(t));
+      }
       sun.position.set(lead.x + 70, 120, lead.z + 40);
       sun.target.position.copy(lead);
     }

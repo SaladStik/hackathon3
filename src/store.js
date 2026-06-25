@@ -13,6 +13,7 @@ const state = {
   // scene
   dir: 1, // background train travel direction
   locked: false,
+  inside: false,
   crashing: false,
 };
 
