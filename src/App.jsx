@@ -4,7 +4,6 @@ import { getState, setState } from './store.js';
 import { fetchFeed } from './realtime.js';
 import { DIRECTIONS } from './data.js';
 import TripPanel from './ui/TripPanel.jsx';
-import Hud from './ui/Hud.jsx';
 import ViewButtons from './ui/ViewButtons.jsx';
 
 export default function App() {
@@ -104,7 +103,6 @@ export default function App() {
   return (
     <>
       <div ref={mountRef} className="canvas-host" />
-      <Hud />
       <ViewButtons />
       <TripPanel />
     </>

@@ -6,7 +6,7 @@ import { getState, setState } from '../store.js';
 import { useStore } from './useStore.js';
 
 export default function TripPanel() {
-  const { loading, error, feed, fetchedAt } = useStore();
+  const { loading, error, feed, fetchedAt, panelOpen } = useStore();
   const [dirIndex, setDirIndex] = useState(0);
   const [stopId, setStopId] = useState(DIRECTIONS[0].boarding[0].stop_id);
   const [result, setResult] = useState(null);
@@ -17,11 +17,13 @@ export default function TripPanel() {
   // keep the background train pointed the chosen way
   useEffect(() => { setState({ dir: dirObj.dir }); }, [dirIndex]);
 
-  // recompute whenever the feed or the selection changes
+  // recompute whenever the feed or the selection changes; works from the
+  // timetable even if the live feed is unavailable
   useEffect(() => {
-    if (!feed) return;
     let alive = true;
-    computeWait(feed, dirObj.route, stopId).then((r) => { if (alive) setResult(r); });
+    computeWait(feed, dirObj.route, stopId)
+      .then((r) => { if (alive) setResult(r); })
+      .catch(() => { if (alive) setResult(null); });
     return () => { alive = false; };
   }, [feed, dirIndex, stopId]);
 
@@ -43,9 +45,23 @@ export default function TripPanel() {
     }
   };
 
+  if (!panelOpen) {
+    return (
+      <button className="pill pill-top" onClick={() => setState({ panelOpen: true })}>
+        Plan a trip
+      </button>
+    );
+  }
+
   return (
     <div className="panel">
-      <div className="panel-grip" />
+      <div className="panel-head">
+        <div>
+          <div className="panel-title">Calgary CTrain</div>
+          <div className="panel-status">{error ? 'Live data offline' : loading ? 'Loading live data' : 'Live arrivals'}</div>
+        </div>
+        <button className="close" onClick={() => setState({ panelOpen: false })} aria-label="Hide panel">Hide</button>
+      </div>
 
       <span className="field-label">Heading toward</span>
       <div className="dir-grid">
@@ -82,11 +98,9 @@ export default function TripPanel() {
 }
 
 function Result({ loading, error, result, dirObj }) {
-  if (error) return <div className="result result-msg">Could not load live data. {error}</div>;
   if (loading && !result) return <div className="result result-msg">Pulling the latest feed</div>;
-  if (!result) return <div className="result result-msg">Pick your stop to see the next train.</div>;
-  if (result.upcoming === 0) {
-    return <div className="result result-msg">No trains toward {dirObj.terminus} predicted from this stop right now.</div>;
+  if (!result || result.avgWaitMin == null) {
+    return <div className="result result-msg">Train times currently unavailable.</div>;
   }
 
   const wait = round1(result.avgWaitMin);
@@ -96,7 +110,10 @@ function Result({ loading, error, result, dirObj }) {
   return (
     <div className="result">
       <div className="result-big">{wait} min</div>
-      <div className="result-cap">average wait toward {dirObj.terminus}</div>
+      <div className="result-cap">
+        average wait toward {dirObj.terminus}
+        {result.scheduled ? ' (from timetable)' : ''}
+      </div>
       <div className="result-row">
         <Stat label="Next train" value={next != null ? `${next} min` : 'n/a'} />
         <Stat label="Average delay" value={delay != null ? signed(delay) : 'n/a'} tone={delayTone(delay)} />

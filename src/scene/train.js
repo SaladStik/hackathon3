@@ -71,6 +71,54 @@ function addPeople(car) {
   car.userData.people = people;
 }
 
+function addInterior(car) {
+  const L = 14, W = 2.7, floorY = 1.08, ceilY = 3.3;
+  const panel = new THREE.MeshStandardMaterial({ color: 0xdfe3e6, roughness: 0.85 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.95 });
+  const seatMat = new THREE.MeshStandardMaterial({ color: 0x2f5d9e, roughness: 0.6 });
+  const poleMat = new THREE.MeshStandardMaterial({ color: 0xb8bdc2, metalness: 0.7, roughness: 0.35 });
+  const lightMat = new THREE.MeshStandardMaterial({ color: 0xfff6e0, emissive: 0xffe9b0, emissiveIntensity: 1.2 });
+
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(W * 0.92, 0.08, L * 0.96), floorMat);
+  floor.position.y = floorY; car.add(floor);
+
+  const ceil = new THREE.Mesh(new THREE.BoxGeometry(W * 0.86, 0.08, L * 0.96), panel);
+  ceil.position.y = ceilY; car.add(ceil);
+  for (const x of [-0.5, 0.5]) {
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.06, L * 0.9), lightMat);
+    strip.position.set(x, ceilY - 0.08, 0); car.add(strip);
+  }
+
+  for (const s of [1, -1]) {
+    // upper wall above the windows, and seats + lower wall below them
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.85, L * 0.96), panel);
+    upper.position.set(s * W * 0.49, 2.85, 0); car.add(upper);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.12, L * 0.85), seatMat);
+    base.position.set(s * W * 0.34, 1.5, 0); car.add(base);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, L * 0.85), seatMat);
+    back.position.set(s * W * 0.46, 1.78, 0); car.add(back);
+    const lower = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.45, L * 0.96), panel);
+    lower.position.set(s * W * 0.49, 1.32, 0); car.add(lower);
+    // window pillars
+    for (let z = -L / 2 + 1.5; z <= L / 2 - 1.5; z += 2.4) {
+      const pil = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.9, 0.12), panel);
+      pil.position.set(s * W * 0.5, 1.95, z); car.add(pil);
+    }
+  }
+
+  // vertical grab poles + a ceiling handrail down the aisle
+  for (const z of [-4.5, -1.5, 1.5, 4.5]) {
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.1, 8), poleMat);
+    pole.position.set(0, 2.1, z); car.add(pole);
+  }
+  const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, L * 0.85, 8), poleMat);
+  rail.rotation.x = Math.PI / 2; rail.position.set(0, 3.0, 0); car.add(rail);
+
+  // front cab partition
+  const cab = new THREE.Mesh(new THREE.BoxGeometry(W * 0.86, 1.4, 0.1), panel);
+  cab.position.set(0, 1.78, L / 2 - 0.6); car.add(cab);
+}
+
 export function buildTrain(scene, count = 3) {
   const cars = [];
   for (let i = 0; i < count; i++) {
@@ -78,6 +126,7 @@ export function buildTrain(scene, count = 3) {
     scene.add(c);
     cars.push(c);
   }
+  addInterior(cars[0]);
   addPeople(cars[0]); // riders shown in the lead car
   return cars;
 }

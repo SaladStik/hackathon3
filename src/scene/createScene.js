@@ -181,8 +181,8 @@ export function createScene(host) {
       if (st.inside) {
         // ride inside the lead car: see the riders and out the windows
         cars[0].updateMatrixWorld();
-        insideEye.set(0, 1.95, -3.2); cars[0].localToWorld(insideEye);
-        insideTgt.set(0, 1.7, 10); cars[0].localToWorld(insideTgt);
+        insideEye.set(0, 2.0, -4.8); cars[0].localToWorld(insideEye);
+        insideTgt.set(0, 1.65, 5); cars[0].localToWorld(insideTgt);
         camera.position.lerp(insideEye, 0.25);
         camera.lookAt(insideTgt);
       } else {

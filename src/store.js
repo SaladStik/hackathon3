@@ -14,6 +14,7 @@ const state = {
   dir: 1, // background train travel direction
   locked: false,
   inside: false,
+  panelOpen: true,
   crashing: false,
 };
 

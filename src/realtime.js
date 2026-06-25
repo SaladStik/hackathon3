@@ -61,7 +61,7 @@ export async function computeWait(feed, route, stopId) {
 
   const arrivals = [];
   const delays = [];
-  for (const e of feed.entity) {
+  for (const e of (feed ? feed.entity : [])) {
     const tu = e.tripUpdate;
     if (!tu || !tu.trip || tu.trip.routeId !== route) continue;
     for (const stu of tu.stopTimeUpdate || []) {
@@ -79,11 +79,34 @@ export async function computeWait(feed, route, stopId) {
 
   arrivals.sort((a, b) => a - b);
   const future = arrivals.filter((a) => a > now);
-  const nextEta = future.length ? future[0] - now : null;
 
-  const headways = [];
-  for (let i = 1; i < future.length; i++) headways.push(future[i] - future[i - 1]);
-  const avgHeadway = headways.length ? headways.reduce((s, x) => s + x, 0) / headways.length : null;
+  let scheduled = false;
+  let nextEta = null;
+  let avgHeadway = null;
+
+  if (future.length) {
+    nextEta = future[0] - now;
+    const hw = [];
+    for (let i = 1; i < future.length; i++) hw.push(future[i] - future[i - 1]);
+    avgHeadway = hw.length ? hw.reduce((s, x) => s + x, 0) / hw.length : null;
+  } else {
+    // no live trains in range: predict from the timetable for this platform
+    scheduled = true;
+    const secs = [];
+    for (const tid in schedule) {
+      const s = schedule[tid][stopId];
+      if (s != null) secs.push(s);
+    }
+    const uniq = [...new Set(secs)].sort((a, b) => a - b);
+    let times = uniq.map((s) => midnight + s).filter((t) => t > now);
+    if (!times.length && uniq.length) times = [midnight + 86400 + uniq[0]]; // wrap to tomorrow
+    if (times.length) {
+      nextEta = times[0] - now;
+      const hw = [];
+      for (let i = 1; i < times.length; i++) hw.push(times[i] - times[i - 1]);
+      avgHeadway = median(hw);
+    }
+  }
 
   const avgWait = avgHeadway != null ? avgHeadway / 2 : nextEta;
   const avgDelay = delays.length ? delays.reduce((s, x) => s + x, 0) / delays.length : null;
@@ -93,6 +116,14 @@ export async function computeWait(feed, route, stopId) {
     avgWaitMin: avgWait != null ? avgWait / 60 : null,
     avgDelayMin: avgDelay != null ? avgDelay / 60 : null,
     upcoming: future.length,
+    scheduled,
     delaySamples: delays.length,
   };
+}
+
+function median(arr) {
+  if (!arr.length) return null;
+  const s = [...arr].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
