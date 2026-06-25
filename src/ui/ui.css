@@ -173,22 +173,15 @@ button, select { font-family: inherit; -webkit-user-select: none; user-select: n
 
 /* trip summary (not a stats grid) */
 .lead-msg { color: var(--muted); font-size: 14px; padding: 14px 2px; }
-.trip { padding: 10px 2px 2px; }
-.trip-head { font-size: 16px; color: var(--ink); }
-.trip-head strong { font-size: 34px; font-weight: 800; }
-.trip-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
-.load { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
-.load-track { flex: 1; height: 8px; border-radius: 999px; background: #eef1f3; overflow: hidden; }
-.load-fill { height: 100%; border-radius: 999px; }
-.load-tag { font-size: 12px; color: var(--muted); }
+.trip { padding: 12px 2px 2px; }
+.trip-head { color: var(--ink); }
+.trip-head strong { font-size: 46px; font-weight: 800; line-height: 1; }
+.trip-sub { font-size: 14px; color: var(--ink); margin-top: 4px; }
+.trip-meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
-.trip-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-top: 16px;
-}
-.stamp { font-size: 12px; color: var(--muted); }
 .link {
+  display: inline-block; margin-top: 14px;
   border: 0; background: none; color: var(--accent);
-  font-size: 13px; font-weight: 700; padding: 6px; cursor: pointer;
+  font-size: 13px; font-weight: 700; padding: 6px 0; cursor: pointer;
 }
 .link:disabled { opacity: 0.55; cursor: default; }

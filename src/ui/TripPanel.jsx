@@ -49,10 +49,7 @@ export default function TripPanel() {
   return (
     <div className="panel">
       <div className="panel-head">
-        <div>
-          <div className="panel-title">Where are you headed?</div>
-          <div className="panel-status">{error ? 'Live data offline' : loading ? 'Loading live data' : 'Live arrivals'}</div>
-        </div>
+        <div className="panel-title">Next train</div>
         <button className="close" onClick={() => setState({ panelOpen: false })} aria-label="Hide panel">Hide</button>
       </div>
 
@@ -92,12 +89,9 @@ export default function TripPanel() {
 
       <Result loading={loading} result={result} dirObj={dirObj} />
 
-      <div className="trip-foot">
-        <span className="stamp">{fetchedAt ? `Updated ${timeAgo(fetchedAt)}` : 'Loading'}</span>
-        <button className="link" onClick={refresh} disabled={busy || loading}>
-          {busy ? 'Refreshing' : 'Refresh'}
-        </button>
-      </div>
+      <button className="link" onClick={refresh} disabled={busy || loading}>
+        {busy ? 'Refreshing' : 'Refresh'}
+      </button>
     </div>
   );
 }
@@ -106,34 +100,22 @@ function Result({ loading, result, dirObj }) {
   if (loading && !result) return <p className="lead-msg">Checking live arrivals</p>;
   if (!result || result.avgWaitMin == null) return <p className="lead-msg">Train times currently unavailable.</p>;
 
-  const wait = round1(result.avgWaitMin);
-  const next = result.nextEtaMin != null ? Math.round(result.nextEtaMin) : null;
+  const next = result.nextEtaMin != null ? Math.round(result.nextEtaMin) : Math.round(result.avgWaitMin);
   const load = Math.round(busyness() * 100);
-  const loadColor = `hsl(${Math.round(120 * (1 - load / 100))}, 60%, 42%)`;
 
   let note = '';
-  if (result.scheduled) note = ' from the timetable';
+  if (result.scheduled) note = 'from the timetable';
   else if (result.avgDelayMin != null) {
     const d = Math.round(result.avgDelayMin);
-    note = d >= 1 ? `, about ${d} min late` : d <= -1 ? `, about ${-d} min early` : ', on time';
+    note = d >= 1 ? `${d} min late` : d <= -1 ? `${-d} min early` : 'on time';
   }
+  const fullWord = load > 70 ? 'busy' : load > 40 ? 'moderate' : 'quiet';
 
   return (
     <div className="trip">
-      <p className="trip-head"><strong>{wait}</strong> min wait</p>
-      <p className="trip-sub">
-        {next != null ? `Next ${dirObj.terminus} train in ${next} min` : `Toward ${dirObj.terminus}`}{note}
-      </p>
-      <div className="load">
-        <div className="load-track"><div className="load-fill" style={{ width: `${load}%`, background: loadColor }} /></div>
-        <span className="load-tag">{load}% full</span>
-      </div>
+      <p className="trip-head"><strong>{next}</strong> min</p>
+      <p className="trip-sub">until the next {dirObj.terminus} train</p>
+      {(note || fullWord) && <p className="trip-meta">{[note, `${fullWord} right now`].filter(Boolean).join('  ·  ')}</p>}
     </div>
   );
-}
-
-function round1(v) { return v == null ? 'n/a' : Math.round(v * 10) / 10; }
-function timeAgo(ts) {
-  const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
-  return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`;
 }
