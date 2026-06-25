@@ -56,15 +56,25 @@ button, select { font-family: inherit; -webkit-user-select: none; user-select: n
   cursor: pointer;
   z-index: 11;
 }
-.pill-top { left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 12px); }
+/* reopen pill: bottom on mobile, top on desktop (opposite the panel) */
+.pill-top {
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+@media (min-width: 620px) {
+  .pill-top { top: calc(env(safe-area-inset-top, 0px) + 12px); bottom: auto; }
+}
 .pill-active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
-/* bottom control bar (always visible) */
+/* view controls: top on mobile (panel is at the bottom), bottom on desktop */
 .controls {
   position: fixed;
   left: 50%; transform: translateX(-50%);
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
   display: flex; gap: 10px; z-index: 11;
+}
+@media (min-width: 620px) {
+  .controls { bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); top: auto; }
 }
 .ctrl {
   min-height: 46px;
@@ -78,24 +88,29 @@ button, select { font-family: inherit; -webkit-user-select: none; user-select: n
 .ctrl-on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
 /* main trip panel: the focus, anchored to the bottom as a sheet */
+/* mobile: planning sheet at the bottom */
 .panel {
   position: fixed;
-  left: 0; right: 0; top: 0;
+  left: 0; right: 0; bottom: 0;
   background: var(--surface);
   color: var(--ink);
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
-  box-shadow: 0 10px 30px rgba(17, 24, 28, 0.18);
-  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 18px;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  box-shadow: 0 -10px 30px rgba(17, 24, 28, 0.18);
+  padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
   max-height: 82vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   z-index: 10;
 }
+/* desktop: panel at the top */
 @media (min-width: 620px) {
   .panel {
     left: 50%; right: auto; transform: translateX(-50%);
-    width: 460px; top: 12px; border-radius: 18px;
+    width: 460px; top: 12px; bottom: auto;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(17, 24, 28, 0.18);
+    padding: 16px;
   }
 }
 .panel-head {
