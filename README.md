@@ -7,14 +7,39 @@ Reads Calgary Transit's [GTFS-RT Trip Updates feed](https://data.calgary.ca/Tran
 - the current headway (gap between consecutive trains)
 - the expected wait for a passenger arriving now (~half the headway)
 
-Station names come from the static GTFS schedule, downloaded once and cached.
+Station names come from the static GTFS schedule, downloaded once.
 
 ## Setup
 
 ```bash
-python3 -m venv .venv
-./.venv/bin/pip install gtfs-realtime-bindings requests
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt   # Windows
+# source .venv/bin/activate && pip install -r requirements.txt   # macOS/Linux
 ```
+
+## Contributing
+
+This repo uses the standard fork workflow:
+
+1. **Fork** [SaladStik/hackathon3](https://github.com/SaladStik/hackathon3/fork) on GitHub (one-time).
+2. **Clone / sync** — this folder already has remotes configured:
+   - `upstream` → SaladStik/hackathon3 (pull latest team changes)
+   - `origin` → your fork at `amadeusk1/hackathon3`
+3. **Pull latest** before you start work:
+   ```bash
+   git fetch upstream
+   git pull upstream main
+   ```
+4. **Branch, commit, push** to your fork:
+   ```bash
+   git checkout -b my-feature
+   git add .
+   git commit -m "Describe your change"
+   git push -u origin my-feature
+   ```
+5. **Open a PR** on GitHub from your fork into `SaladStik/hackathon3:main`.
+
+`git push` defaults to `origin` so you won't accidentally push to upstream.
 
 ## Usage
 
