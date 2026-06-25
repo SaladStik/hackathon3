@@ -3,7 +3,7 @@
 Reads Calgary Transit's [GTFS-RT Trip Updates feed](https://data.calgary.ca/Transportation-Transit/Calgary-Transit-Realtime-Trip-Updates-GTFS-RT/gs4m-mdc2)
 (refreshed ~every 30s) and reports, for a CTrain station/platform:
 
-- the next few predicted arrivals (live countdown)
+- the next  few predicted arrivals (live countdown)
 - the current headway (gap between consecutive trains)
 - the expected wait for a passenger arriving now (~half the headway)
 
