@@ -34,3 +34,5 @@ python3 -m venv .venv
   "CTrain" in the schedule, so they're not yet picked up by the name filter.
 
 Data: City of Calgary Open Data — Trip Updates `gs4m-mdc2`, Schedule `npk7-z3bj`.
+
+_Demo push verified by amadeusk1._
