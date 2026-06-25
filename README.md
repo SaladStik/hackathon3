@@ -7,7 +7,7 @@ Reads Calgary Transit's [GTFS-RT Trip Updates feed](https://data.calgary.ca/Tran
 - the current headway (gap between consecutive trains)
 - the expected wait for a passenger arriving now (~half the headway)
 
-Station names come from the static GTFS schedule, downloaded once.
+Station names come from the static GTFS schedule, downloaded once
 
 ## Setup
 
