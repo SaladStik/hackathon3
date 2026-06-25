@@ -6,7 +6,7 @@ import { addEnvironment } from './environment.js';
 import { addCity } from './city.js';
 import { addStations } from './stations.js';
 import { addTunnels } from './tunnels.js';
-import { buildTrain, CAR_SPACING, MAX_PEOPLE } from './train.js';
+import { buildTrain, buildRiders, CAR_SPACING, MAX_PEOPLE } from './train.js';
 import { createChaseCamera } from './chaseCamera.js';
 import { busyness } from '../busyness.js';
 
@@ -55,21 +55,32 @@ export function createScene(host) {
   let dist = 0, speed = 0, dwell = 0, nextStation = 0, lastDir = 1;
   const tmpP = new THREE.Vector3(), tmpT = new THREE.Vector3(), fz = new THREE.Vector3(0, 0, 1);
 
-  // riders shown in the lead car, colour + count from busyness
-  const people = cars[0].userData.people;
-  const pm4 = new THREE.Matrix4(), pq = new THREE.Quaternion(), ps = new THREE.Vector3();
+  // riders (scene-level), colour + count from busyness
+  const riders = buildRiders(scene);
+  const rmesh = riders.mesh, rpos = riders.pos;
+  const localM = new THREE.Matrix4(), worldM = new THREE.Matrix4();
+  const qid = new THREE.Quaternion(), qtmp = new THREE.Quaternion();
+  const one = new THREE.Vector3(1, 1, 1), zero = new THREE.Vector3(1e-4, 1e-4, 1e-4);
   const cLow = new THREE.Color(0x2e9e4f), cHigh = new THREE.Color(0xd81e2c), cNow = new THREE.Color();
-  function updatePeople(occ) {
+  let riderCount = 0;
+
+  function updateRidersRun(occ) {
     const k = Math.round(occ * MAX_PEOPLE);
+    riderCount = k;
     cNow.copy(cLow).lerp(cHigh, occ);
+    cars[0].updateMatrixWorld(true);
     for (let i = 0; i < MAX_PEOPLE; i++) {
-      ps.setScalar(i < k ? 1 : 0.0001);
-      pm4.compose(people.userData.pos[i], pq, ps);
-      people.setMatrixAt(i, pm4);
-      people.setColorAt(i, cNow);
+      if (i < k) {
+        localM.compose(rpos[i], qid, one);
+        worldM.multiplyMatrices(cars[0].matrixWorld, localM);
+      } else {
+        worldM.compose(rpos[i], qid, zero);
+      }
+      rmesh.setMatrixAt(i, worldM);
+      rmesh.setColorAt(i, cNow);
     }
-    people.instanceMatrix.needsUpdate = true;
-    if (people.instanceColor) people.instanceColor.needsUpdate = true;
+    rmesh.instanceMatrix.needsUpdate = true;
+    if (rmesh.instanceColor) rmesh.instanceColor.needsUpdate = true;
   }
 
   const insideEye = new THREE.Vector3(), insideTgt = new THREE.Vector3();
@@ -105,6 +116,7 @@ export function createScene(host) {
   let mode = 'run', crashT = 0;
   const crashCenter = new THREE.Vector3();
   const phys = cars.map(() => ({ vel: new THREE.Vector3(), ang: new THREE.Vector3() }));
+  let crashRiders = null;
   const flash = new THREE.PointLight(0xffaa33, 0, 80); scene.add(flash);
   let boom = null;
 
@@ -134,6 +146,37 @@ export function createScene(host) {
     });
     boom = makeBoom(crashCenter); scene.add(boom.group);
     flash.position.copy(crashCenter).setY(crashCenter.y + 3); flash.intensity = 9;
+
+    // fling the riders out of the lead car
+    cars[0].updateMatrixWorld(true);
+    crashRiders = [];
+    for (let i = 0; i < riderCount; i++) {
+      const p = rpos[i].clone(); cars[0].localToWorld(p);
+      crashRiders.push({
+        p,
+        v: new THREE.Vector3((Math.random() - 0.5) * 22, 8 + Math.random() * 13, (Math.random() - 0.5) * 22),
+        rot: new THREE.Euler((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6),
+        av: new THREE.Vector3((Math.random() - 0.5) * 11, (Math.random() - 0.5) * 11, (Math.random() - 0.5) * 11),
+      });
+    }
+  }
+
+  function crashRidersStep(dt) {
+    for (let i = 0; i < MAX_PEOPLE; i++) {
+      if (crashRiders && i < crashRiders.length) {
+        const r = crashRiders[i];
+        r.v.y -= 24 * dt;
+        r.p.addScaledVector(r.v, dt);
+        r.rot.x += r.av.x * dt; r.rot.y += r.av.y * dt; r.rot.z += r.av.z * dt;
+        if (r.p.y < 0.25) { r.p.y = 0.25; r.v.y *= -0.3; r.v.x *= 0.7; r.v.z *= 0.7; r.av.multiplyScalar(0.7); }
+        qtmp.setFromEuler(r.rot);
+        worldM.compose(r.p, qtmp, one);
+      } else {
+        worldM.compose(rpos[i], qid, zero);
+      }
+      rmesh.setMatrixAt(i, worldM);
+    }
+    rmesh.instanceMatrix.needsUpdate = true;
   }
 
   function crashStep(dt) {
@@ -151,10 +194,12 @@ export function createScene(host) {
       it.m.scale.multiplyScalar(Math.max(0, 1 - dt * 0.5));
     });
     flash.intensity *= Math.pow(0.015, dt);
+    crashRidersStep(dt);
     if (crashT <= 0) {
       mode = 'run'; speed = 0;
       if (boom) { scene.remove(boom.group); boom = null; }
       flash.intensity = 0;
+      crashRiders = null;
       cars.forEach((car) => car.rotation.set(0, 0, 0)); // placeCar restores orientation
     }
   }
@@ -173,7 +218,7 @@ export function createScene(host) {
     } else {
       step(dt, dir);
       for (let i = 0; i < cars.length; i++) placeCar(cars[i], dist - i * CAR_SPACING * dir, dir);
-      updatePeople(busyness());
+      updateRidersRun(busyness());
       const lead = cars[0].position;
       const t = (((dist % track.length) + track.length) % track.length) / track.length;
       track.curve.getTangentAt(t, tmpT).setY(0).normalize().multiplyScalar(dir);

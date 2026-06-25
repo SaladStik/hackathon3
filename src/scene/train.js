@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const WHITE = new THREE.MeshStandardMaterial({ color: 0xf2f3f4, roughness: 0.45, metalness: 0.1 });
 const RED = new THREE.MeshStandardMaterial({ color: 0xcc1f33, roughness: 0.5, metalness: 0.1 });
@@ -58,19 +59,36 @@ function buildCar() {
 export const CAR_SPACING = 15.2;
 export const MAX_PEOPLE = 24;
 
-function addPeople(car) {
-  const geo = new THREE.CapsuleGeometry(0.16, 0.5, 3, 6);
-  const mat = new THREE.MeshStandardMaterial({ roughness: 0.7 });
-  const people = new THREE.InstancedMesh(geo, mat, MAX_PEOPLE);
-  people.frustumCulled = false;
+function personGeometry() {
+  const torso = new THREE.CylinderGeometry(0.16, 0.21, 0.62, 10); torso.translate(0, 0.66, 0);
+  const hips = new THREE.SphereGeometry(0.2, 10, 8); hips.scale(1, 0.7, 0.8); hips.translate(0, 0.42, 0);
+  const legL = new THREE.CylinderGeometry(0.09, 0.08, 0.5, 8); legL.translate(-0.08, 0.2, 0);
+  const legR = new THREE.CylinderGeometry(0.09, 0.08, 0.5, 8); legR.translate(0.08, 0.2, 0);
+  const head = new THREE.SphereGeometry(0.15, 12, 10); head.translate(0, 1.12, 0);
+  const armL = new THREE.CylinderGeometry(0.06, 0.06, 0.55, 6); armL.translate(-0.24, 0.7, 0);
+  const armR = new THREE.CylinderGeometry(0.06, 0.06, 0.55, 6); armR.translate(0.24, 0.7, 0);
+  return mergeGeometries([legL, legR, hips, torso, armL, armR, head]);
+}
+
+// Riders live at scene level (not parented to the car) so they can be flung
+// independently when the train crashes.
+export function buildRiders(scene) {
+  const mesh = new THREE.InstancedMesh(
+    personGeometry(),
+    new THREE.MeshStandardMaterial({ roughness: 0.7 }),
+    MAX_PEOPLE
+  );
+  mesh.frustumCulled = false;
+  mesh.castShadow = true;
+  scene.add(mesh);
+
+  // local standing positions inside the lead car (origin at the car centre)
   const pos = [];
   const rows = 8, cols = 3;
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-    pos.push(new THREE.Vector3((c - 1) * 0.7, 1.55, (r - 3.5) * 1.5));
+    pos.push(new THREE.Vector3((c - 1) * 0.62, 0.55, (r - 3.5) * 1.5));
   }
-  people.userData.pos = pos;
-  car.add(people);
-  car.userData.people = people;
+  return { mesh, pos };
 }
 
 function addInterior(car) {
@@ -129,6 +147,5 @@ export function buildTrain(scene, count = 3) {
     cars.push(c);
   }
   addInterior(cars[0]);
-  addPeople(cars[0]); // riders shown in the lead car
   return cars;
 }

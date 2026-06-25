@@ -129,61 +129,66 @@ button, select { font-family: inherit; -webkit-user-select: none; user-select: n
 }
 .close:active { background: #eef1f3; }
 
-.field-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  margin: 12px 0 8px;
-}
-
-.dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.dir {
-  display: flex; flex-direction: column; gap: 3px;
-  text-align: left; padding: 12px;
+/* direction chips */
+.chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 6px; }
+.chip {
+  display: flex; flex-direction: column; gap: 2px;
+  text-align: left; padding: 10px 12px;
   border: 1px solid var(--line); background: var(--surface);
   border-radius: 12px; cursor: pointer; color: var(--ink);
 }
-.dir-term { font-size: 14px; font-weight: 700; }
-.dir-line { font-size: 11px; color: var(--muted); }
-.dir-sel { background: var(--accent); border-color: var(--accent); }
-.dir-sel .dir-term { color: var(--accent-ink); }
-.dir-sel .dir-line { color: rgba(255, 255, 255, 0.85); }
+.chip-term { font-size: 14px; font-weight: 700; }
+.chip-line { font-size: 11px; color: var(--muted); }
+.chip-on .chip-term, .chip-on .chip-line { color: #fff; }
 
-.select {
-  width: 100%; padding: 12px;
-  border-radius: 12px; border: 1px solid var(--line);
-  background: var(--surface); color: var(--ink);
-  font-size: 15px; font-weight: 600;
+/* line map picker */
+.map {
+  position: relative;
+  max-height: 38vh; overflow-y: auto;
+  margin: 8px 0 4px; padding: 4px 0 4px 4px;
+}
+.map::before {
+  content: ''; position: absolute;
+  left: 13px; top: 16px; bottom: 16px; width: 4px;
+  background: var(--line); border-radius: 2px; opacity: 0.85;
+}
+.stop {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; padding: 7px 4px; border: 0; background: none;
+  text-align: left; cursor: pointer; position: relative;
+}
+.stop:disabled { cursor: default; }
+.dot {
+  width: 14px; height: 14px; border-radius: 50%; flex: none;
+  background: #fff; border: 3px solid var(--line); z-index: 1;
+}
+.dot-on { background: var(--line); width: 18px; height: 18px; box-shadow: 0 0 0 4px rgba(0,0,0,0.06); }
+.dot-term { border-radius: 4px; background: var(--line); }
+.stop-name { font-size: 15px; color: var(--ink); }
+.stop-on .stop-name { font-weight: 700; }
+.stop-tag {
+  margin-left: auto; font-size: 11px; font-weight: 700;
+  color: var(--line);
 }
 
-/* result block */
-.result {
-  margin-top: 16px; padding: 16px;
-  background: #f4f6f7; border-radius: 14px; text-align: center;
-}
-.result-msg { color: var(--muted); font-size: 14px; font-weight: 500; }
-.result-big { font-size: 40px; font-weight: 800; line-height: 1; color: var(--ink); }
-.result-cap { font-size: 13px; color: var(--muted); margin-top: 6px; }
-.result-row { display: flex; gap: 10px; margin-top: 14px; }
-.stat {
-  flex: 1; background: var(--surface);
-  border: 1px solid var(--line); border-radius: 12px; padding: 10px;
-}
-.stat-value { font-size: 18px; font-weight: 700; color: var(--ink); }
-.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.tone-late { color: var(--late); }
-.tone-early { color: var(--early); }
-.tone-ok { color: var(--ok); }
+/* trip summary (not a stats grid) */
+.lead-msg { color: var(--muted); font-size: 14px; padding: 14px 2px; }
+.trip { padding: 10px 2px 2px; }
+.trip-head { font-size: 16px; color: var(--ink); }
+.trip-head strong { font-size: 34px; font-weight: 800; }
+.trip-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.load { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.load-track { flex: 1; height: 8px; border-radius: 999px; background: #eef1f3; overflow: hidden; }
+.load-fill { height: 100%; border-radius: 999px; }
+.load-tag { font-size: 12px; color: var(--muted); }
 
-.panel-foot {
+.trip-foot {
   display: flex; align-items: center; justify-content: space-between;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 .stamp { font-size: 12px; color: var(--muted); }
-.refresh {
-  border: 0; border-radius: 10px;
-  background: var(--accent); color: var(--accent-ink);
-  font-size: 13px; font-weight: 700; padding: 10px 16px; cursor: pointer;
+.link {
+  border: 0; background: none; color: var(--accent);
+  font-size: 13px; font-weight: 700; padding: 6px; cursor: pointer;
 }
-.refresh:disabled { opacity: 0.55; cursor: default; }
+.link:disabled { opacity: 0.55; cursor: default; }
