@@ -178,6 +178,9 @@ export function createScene(host) {
       const t = (((dist % track.length) + track.length) % track.length) / track.length;
       track.curve.getTangentAt(t, tmpT).setY(0).normalize().multiplyScalar(dir);
 
+      // hide the lead car's exterior panels while riding inside it
+      for (const m of cars[0].userData.shell) m.visible = !st.inside;
+
       if (st.inside) {
         // ride inside the lead car: see the riders and out the windows
         cars[0].updateMatrixWorld();

@@ -14,8 +14,16 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body, #root { width: 100%; height: 100%; }
-body { overflow: hidden; background: #9aa3ab; -webkit-tap-highlight-color: transparent; }
+html, body, #root { width: 100%; height: 100%; height: 100dvh; }
+body {
+  overflow: hidden;
+  background: #9aa3ab;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+button, select { font-family: inherit; -webkit-user-select: none; user-select: none; }
 
 .canvas-host { position: fixed; inset: 0; }
 .canvas-host canvas { display: block; touch-action: none; }
@@ -48,27 +56,46 @@ body { overflow: hidden; background: #9aa3ab; -webkit-tap-highlight-color: trans
   cursor: pointer;
   z-index: 11;
 }
-.pill-left { left: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); }
-.pill-right { right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); }
 .pill-top { left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 12px); }
 .pill-active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* bottom control bar (always visible) */
+.controls {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  display: flex; gap: 10px; z-index: 11;
+}
+.ctrl {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px; font-weight: 600;
+  padding: 0 18px; border-radius: 999px;
+  box-shadow: var(--shadow); cursor: pointer;
+}
+.ctrl-on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
 /* main trip panel: the focus, anchored to the bottom as a sheet */
 .panel {
   position: fixed;
-  left: 0; right: 0; bottom: 0;
+  left: 0; right: 0; top: 0;
   background: var(--surface);
   color: var(--ink);
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  box-shadow: 0 -10px 30px rgba(17, 24, 28, 0.18);
-  padding: 8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  box-shadow: 0 10px 30px rgba(17, 24, 28, 0.18);
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 18px;
+  max-height: 82vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   z-index: 10;
 }
 @media (min-width: 620px) {
   .panel {
     left: 50%; right: auto; transform: translateX(-50%);
-    width: 460px; bottom: 16px; border-radius: 18px;
+    width: 460px; top: 12px; border-radius: 18px;
   }
 }
 .panel-head {

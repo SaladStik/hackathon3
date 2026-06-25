@@ -14,10 +14,11 @@ function buildCar() {
   const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, L), WHITE);
   body.position.y = floor + H / 2; body.castShadow = body.receiveShadow = true; car.add(body);
 
+  const shell = []; // exterior cosmetic parts, hidden when viewing from inside
   const band = new THREE.Mesh(new THREE.BoxGeometry(W * 1.02, 0.7, L * 1.001), RED);
-  band.position.y = floor + 0.55; car.add(band);
+  band.position.y = floor + 0.55; car.add(band); shell.push(band);
   const shoulder = new THREE.Mesh(new THREE.BoxGeometry(W * 1.02, 0.3, L * 0.999), RED);
-  shoulder.position.y = floor + H - 0.25; car.add(shoulder);
+  shoulder.position.y = floor + H - 0.25; car.add(shoulder); shell.push(shoulder);
   const roof = new THREE.Mesh(new THREE.BoxGeometry(W * 0.82, 0.45, L * 0.96), GREY);
   roof.position.y = floor + H + 0.18; roof.castShadow = true; car.add(roof);
 
@@ -27,7 +28,7 @@ function buildCar() {
   }
   for (const z of [L / 2, -L / 2]) {
     const cap = new THREE.Mesh(new THREE.BoxGeometry(W, 1.1, 0.18), RED);
-    cap.position.set(0, floor + 0.85, z + Math.sign(z) * 0.04); car.add(cap);
+    cap.position.set(0, floor + 0.85, z + Math.sign(z) * 0.04); car.add(cap); shell.push(cap);
     const ws = new THREE.Mesh(new THREE.BoxGeometry(W * 0.85, 1.1, 0.08), GLASS);
     ws.position.set(0, floor + H * 0.62, z + Math.sign(z) * 0.05); car.add(ws);
   }
@@ -50,6 +51,7 @@ function buildCar() {
   const bar = new THREE.Mesh(new THREE.BoxGeometry(W * 0.7, 0.06, 0.06), DARK); bar.position.set(0, pivot + 1.0, 0.85); car.add(bar);
 
   car.userData.body = body;
+  car.userData.shell = shell;
   return car;
 }
 
