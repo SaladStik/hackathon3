@@ -1,6 +1,11 @@
 import { transit_realtime } from 'gtfs-realtime-bindings';
 
-const FEED_URL = 'https://data.calgary.ca/download/gs4m-mdc2/application%2Foctet-stream';
+// The /download endpoint 302-redirects to a URL that lacks CORS headers, so the
+// browser blocks it. The Socrata metadata + blob file endpoints both send
+// Access-Control-Allow-Origin: *, so we go through those instead.
+const META_URL = 'https://data.calgary.ca/api/views/gs4m-mdc2.json';
+const fileUrl = (blobId) =>
+  `https://data.calgary.ca/api/views/gs4m-mdc2/files/${blobId}?filename=tripupdates.pb`;
 const SCHEDULE_URL = import.meta.env.BASE_URL + 'schedule.json';
 
 let schedulePromise = null;
@@ -34,7 +39,12 @@ function calgaryMidnight() {
 
 // Pull the latest realtime feed and decode it.
 export async function fetchFeed() {
-  const res = await fetch(FEED_URL, { cache: 'no-store' });
+  const meta = await fetch(META_URL, { cache: 'no-store' }).then((r) => {
+    if (!r.ok) throw new Error('meta http ' + r.status);
+    return r.json();
+  });
+  if (!meta.blobId) throw new Error('no blobId in metadata');
+  const res = await fetch(fileUrl(meta.blobId), { cache: 'no-store' });
   if (!res.ok) throw new Error('feed http ' + res.status);
   const buf = new Uint8Array(await res.arrayBuffer());
   const feed = transit_realtime.FeedMessage.decode(buf);

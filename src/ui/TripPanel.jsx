@@ -7,7 +7,7 @@ import { useStore } from './useStore.js';
 export default function TripPanel() {
   const { loading, error, feed, fetchedAt } = useStore();
   const [dirIndex, setDirIndex] = useState(0);
-  const [stopId, setStopId] = useState(DIRECTIONS[0].stations[0].stop_id);
+  const [stopId, setStopId] = useState(DIRECTIONS[0].boarding[0].stop_id);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -26,7 +26,7 @@ export default function TripPanel() {
 
   const onDir = (i) => {
     setDirIndex(i);
-    setStopId(DIRECTIONS[i].stations[0].stop_id);
+    setStopId(DIRECTIONS[i].boarding[0].stop_id);
   };
 
   const refresh = async () => {
@@ -63,7 +63,7 @@ export default function TripPanel() {
 
       <label className="field-label" htmlFor="board">Getting on at</label>
       <select id="board" className="select" value={stopId} onChange={(e) => setStopId(e.target.value)}>
-        {dirObj.stations.map((s) => (
+        {dirObj.boarding.map((s) => (
           <option key={s.stop_id} value={s.stop_id}>{s.name}</option>
         ))}
       </select>
