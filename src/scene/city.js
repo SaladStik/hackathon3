@@ -49,10 +49,14 @@ function addSidewalks(scene, items) {
   scene.add(im);
 }
 
+// colourful, slightly glassy skyline; towers lean toward blue/teal glass
+const PALETTE = [0x6fa8c7, 0x5fa39a, 0x79a86a, 0xc9a96a, 0x8893a0, 0xaac4d2, 0xb9b2a6, 0x4f7da6];
+const GLASS = [0x6fa8c7, 0x4f7da6, 0x5fa39a, 0xaac4d2];
+
 function addBuildings(scene, items) {
   const im = new THREE.InstancedMesh(
     new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshStandardMaterial({ roughness: 0.85 }),
+    new THREE.MeshStandardMaterial({ roughness: 0.32, metalness: 0.45 }),
     items.length
   );
   im.castShadow = im.receiveShadow = true;
@@ -60,7 +64,8 @@ function addBuildings(scene, items) {
   items.forEach((b, i) => {
     m4.compose(new THREE.Vector3(b.x, 0.3 + b.h / 2, b.z), q, new THREE.Vector3(b.w, b.h, b.d));
     im.setMatrixAt(i, m4);
-    c.setRGB(b.shade, b.shade * 0.99, b.shade * 1.02);
+    const pool = b.h > 40 ? GLASS : PALETTE;
+    c.setHex(pool[(Math.random() * pool.length) | 0]);
     im.setColorAt(i, c);
   });
   scene.add(im);

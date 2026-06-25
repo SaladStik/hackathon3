@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { GAUGE } from './track.js';
-import { STATION_NAMES } from '../data.js';
+
+// Background dashboard only; the real station list lives in the trip panel.
+const STATION_NAMES = ['Stop 1', 'Stop 2', 'Stop 3', 'Stop 4', 'Stop 5', 'Stop 6'];
 
 // Platforms with red canopies at evenly spaced points around the loop.
 export function addStations(scene, track) {

@@ -46,14 +46,18 @@ export function createChaseCamera(camera, dom) {
     yawOffset *= 0.94;
     const dir = smoothFwd.clone().applyAxisAngle(up, yawOffset);
 
-    const targetH = inTunnel ? 3.4 : camHeight + pitchAdj;
-    const targetD = inTunnel ? 12 : camDist;
-    effH += (targetH - effH) * 0.08;
-    effD += (targetD - effD) * 0.08;
-
-    camGoal.copy(lead).addScaledVector(dir, -effD).addScaledVector(up, effH);
-    lookGoal.copy(lead).addScaledVector(dir, lookAhead).addScaledVector(up, 2);
-    camera.position.lerp(camGoal, 0.12);
+    if (inTunnel) {
+      // sit in front of the train, low, looking back as it bears down
+      camGoal.copy(lead).addScaledVector(dir, 12).addScaledVector(up, 3.6);
+      lookGoal.copy(lead).addScaledVector(up, 1.6);
+      camera.position.lerp(camGoal, 0.16);
+    } else {
+      effH += (camHeight + pitchAdj - effH) * 0.08;
+      effD += (camDist - effD) * 0.08;
+      camGoal.copy(lead).addScaledVector(dir, -effD).addScaledVector(up, effH);
+      lookGoal.copy(lead).addScaledVector(dir, lookAhead).addScaledVector(up, 2);
+      camera.position.lerp(camGoal, 0.12);
+    }
     camera.lookAt(lookGoal);
   }
 

@@ -3,8 +3,7 @@ import { getState, setState } from '../store.js';
 import { useStore } from './useStore.js';
 
 export default function LockButton() {
-  const { locked, menuOpen } = useStore();
-  if (menuOpen) return null;
+  const { locked } = useStore();
   return (
     <button
       className={`pill pill-right ${locked ? 'pill-active' : ''}`}
